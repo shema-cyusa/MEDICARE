@@ -1,0 +1,60 @@
+:root{
+	--card-bg: rgba(255,255,255,0.98);
+	--accent: #0066ff;
+	--muted: #6b7280;
+}
+html,body{height:100%;}
+body{
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+	margin:0; padding:0; color:#0f172a;
+	background-image: linear-gradient(to bottom right, rgba(6,11,34,0.55), rgba(6,11,34,0.25)), url('/lab-portal/background.png');
+	background-size:cover; background-position:center center; display:flex; align-items:center; justify-content:center;
+}
+#app{ width:100%; max-width:980px; margin:24px; }
+.layout{ display:flex; gap:28px; align-items:flex-start; }
+.login-card{ background: #ffffff; border-radius:16px; box-shadow: 0 14px 44px rgba(2,6,23,0.18); padding:30px; width:420px; transform: translateY(0); animation: floatIn 420ms ease forwards; border: 1px solid rgba(15,23,42,0.06); }
+.brand{ display:flex; align-items:center; gap:14px; margin-bottom:10px }
+.brand .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),#00a3ff); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px; box-shadow: 0 6px 18px rgba(3,10,60,0.25); }
+.brand h1{ font-size:18px; margin:0; color:#0b1220 }
+.muted{ color:var(--muted); font-size:14px }
+.form-row{ display:flex; flex-direction:column; gap:6px; margin-top:12px }
+.form-row label{ font-size:13px; color:#0b1220 }
+.form-row input{ padding:12px 14px; border-radius:10px; border:1px solid rgba(11,18,32,0.06); font-size:15px; transition: box-shadow 160ms ease, border-color 160ms ease; background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,249,250,0.98)); }
+.form-row input:focus{ outline: none; border-color: rgba(0,102,255,0.9); box-shadow: 0 6px 18px rgba(0,102,255,0.08); }
+.actions{ margin-top:18px; display:flex; gap:8px }
+.btn{ background: linear-gradient(90deg, var(--accent), #0088ff); color:white; padding:10px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:700; transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease; box-shadow: 0 8px 20px rgba(6,11,34,0.18); }
+.btn:hover{ transform: translateY(-2px); box-shadow: 0 14px 30px rgba(6,11,34,0.22); }
+.btn.secondary{ background:transparent; color:var(--accent); border:1px solid rgba(0,102,255,0.12); box-shadow: none }
+.btn:disabled, .btn[disabled]{ background: linear-gradient(90deg, var(--accent), #0088ff); opacity:0.85; cursor:not-allowed; box-shadow:none }
+.note{ margin-top:14px; font-size:13px; color:var(--muted) }
+
+/* success flash for login */
+.note.success{ color: #16a34a; font-weight:700 }
+.seed-list{ margin:8px 0 0 18px }
+.seed-list li{ margin:6px 0 }
+
+@keyframes floatIn{ from{ opacity:0; transform: translateY(8px) scale(0.995) } to{ opacity:1; transform: translateY(0) scale(1) } }
+
+/* notification & assignment card polish */
+.panel-card h3{ margin:0 0 6px 0; font-size:15px }
+.assignments .card{ background: #fafbfd; border: 1px solid rgba(11,18,32,0.04); padding:12px; border-radius:10px }
+.card h3{ margin:0 0 6px 0; color:#0b1220 }
+.card p{ margin:4px 0; color:rgba(11,18,32,0.8) }
+.assignments .actions button{ background:rgba(255,255,255,0.06); color:white; border:0; padding:8px 10px; border-radius:8px; cursor:pointer }
+.assignments .actions button:hover{ background:rgba(255,255,255,0.09) }
+.seed-list{ margin:8px 0 0 18px }
+.seed-list li{ margin:6px 0 }
+.right-panel{ width:380px; color:white }
+.panel-card{ background:#ffffff; padding:18px; border-radius:12px; border:1px solid rgba(15,23,42,0.04); color:#0b1220 }
+.hidden{ display:none }
+.assignments{ margin-top:12px }
+.card{ background:rgba(250,250,252,0.8); border-radius:8px; padding:12px; margin-bottom:10px }
+pre{ white-space:pre-wrap; background:rgba(245,246,248,0.9); padding:8px; border-radius:6px; color:#0b1220 }
+textarea{ width:100%; font-family:monospace }
+footer{ margin-top:18px; font-size:12px; color:rgba(255,255,255,0.6) }
+
+@media (max-width:900px){
+	.layout{ flex-direction:column; align-items:center }
+	.right-panel{ width:100% }
+	.login-card{ width:100%; max-width:420px }
+}

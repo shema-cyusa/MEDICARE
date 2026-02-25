@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lab Portal</title>
+  <link rel="stylesheet" href="/lab-portal/style.css" />
+</head>
+<body>
+  <div id="app">
+    <div class="layout">
+      <div class="login-card">
+        <div class="brand">
+          <div class="logo">LP</div>
+          <div>
+            <h1>Lab Portal</h1>
+            <div class="muted">Login with your lab email to manage assignments</div>
+          </div>
+        </div>
+
+        <div id="login-section">
+          <div class="form-row">
+            <label for="lab-email">Email</label>
+            <input id="lab-email" placeholder="lab email (e.g. acme@example.com)" />
+          </div>
+          <div class="form-row">
+            <label for="lab-pass">Password</label>
+            <input id="lab-pass" type="password" />
+          </div>
+          <div class="actions">
+            <button id="login-btn" class="btn">Login</button>
+            <button id="logout-btn" class="btn secondary hidden">Logout</button>
+          </div>
+          <div id="login-error" class="note" style="color:#ffcccc;margin-top:10px"></div>
+          <div id="login-success" class="note hidden" style="margin-top:10px"></div>
+          <div id="credentials-note" class="note">
+            <strong>Seeded demo labs:</strong>
+            <ul class="seed-list">
+              <li>Acme Lab — acme@example.com</li>
+              <li>Central Diagnostics — central@example.com</li>
+              <li>HealthPlus Labs — healthplus@example.com</li>
+            </ul>
+            <div style="margin-top:8px">Default password for demo labs: <strong>labpass</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div id="lab-info" class="panel-card muted hidden"></div>
+        <div id="assignments-section" class="panel-card hidden" style="margin-top:14px">
+          <h3>Notifications</h3>
+          <div id="notifications"></div>
+          <h3 style="margin-top:12px">Assignments</h3>
+          <div id="assignments" class="assignments"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/lab-portal/main.js"></script>
+</body>
+</html>

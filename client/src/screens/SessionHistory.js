@@ -1,0 +1,1 @@
+import React from 'react';import{View,Text,StyleSheet,SafeAreaView}from'react-native';const S=StyleSheet.create({c:{flex:1,backgroundColor:'#F5F5F5'},o:{flex:1,justifyContent:'center',alignItems:'center'},t:{fontSize:20,fontWeight:'bold'}});export default()=>(<SafeAreaView style={S.c}><View style={S.o}><Text style={S.t}>Screen</Text></View></SafeAreaView>);

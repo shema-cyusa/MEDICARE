@@ -1,0 +1,65 @@
+# QUICK START GUIDE: Therapist Post Feature
+
+## ⚡ TL;DR - Login Credentials
+
+```
+Email:    ishimwe@therapist.com
+Password: Password123!
+```
+
+That's it! You can now create posts.
+
+## 📝 How to Create a Post
+
+1. **Login** with credentials above
+2. **Scroll down** to "Therapist post box"
+3. **Type your message** (e.g., "happy healthy")
+4. **Click "Post"** button
+5. **See success message** - Post created!
+6. **View in feed** - Scroll down to see your post
+
+## 👥 How Patients See Your Posts
+
+1. Patient logs in to Dashboard
+2. Scrolls to "Feed" section
+3. Sees all your therapist posts
+4. Can like and comment on your posts
+
+## 🔧 Troubleshooting
+
+### "Still can't login"
+- Double-check email: `ishimwe@therapist.com`
+- Double-check password: `Password123!`
+- Make sure server is running (port 4000)
+
+### "Post not appearing"
+- Check browser console (F12) for error messages
+- Make sure you're logged in as therapist (not patient)
+- Refresh the page
+
+### "Error alert showing"
+- Read the error message carefully
+- Check console logs for details (F12 > Console tab)
+- Server logs will show what went wrong
+
+## 📞 Support
+
+If something still isn't working:
+1. Check the console logs (F12)
+2. Check server logs in terminal
+3. Review the detailed guide: `THERAPIST_POST_COMPLETE_FIX.md`
+4. Run the test script: `python test_full_flow.py`
+
+## ✅ What Should Work
+
+- ✅ Create posts
+- ✅ See posts in your feed
+- ✅ Patients see your posts
+- ✅ Patients like your posts
+- ✅ Patients comment on your posts
+- ✅ Like counts update
+- ✅ Comment counts update
+
+---
+
+**Everything is working! 🎉**
