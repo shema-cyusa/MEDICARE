@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import AuthContext from '../context/AuthContext';
 import { therapistApi } from '../api';
 
@@ -23,6 +24,7 @@ export default function Profile({ navigation }) {
   const [saving, setSaving] = useState(false);
   const [therapistId, setTherapistId] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [form, setForm] = useState({
     email: '',
     name: '',
@@ -91,6 +93,31 @@ export default function Profile({ navigation }) {
     }
   };
 
+  const handlePickAvatar = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Allow access to your photo library to change your profile photo.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+      base64: true,
+    });
+    if (result.canceled || !result.assets?.length) return;
+    const asset = result.assets[0];
+    if (!asset.base64) {
+      Alert.alert('Upload error', 'Unable to read this photo. Please choose another image.');
+      return;
+    }
+    const extension = asset.fileName?.split('.').pop()?.toLowerCase();
+    const mimeType =
+      asset.mimeType || (extension === 'png' ? 'image/png' : extension === 'gif' ? 'image/gif' : 'image/jpeg');
+    setSelectedAvatar({ uri: asset.uri, dataUri: `data:${mimeType};base64,${asset.base64}` });
+  };
+
   const handleSave = async () => {
     if (!therapistId) {
       Alert.alert('Error', 'Therapist ID missing.');
@@ -116,10 +143,12 @@ export default function Profile({ navigation }) {
         specialization: form.specialization,
         bio: form.bio,
         availability: availabilityPayload,
+        ...(selectedAvatar?.dataUri ? { avatar_url: selectedAvatar.dataUri } : {}),
       };
       const resp = await therapistApi.updateProfile(therapistId, payload);
       const updated = resp.data;
       setProfile(updated);
+      setSelectedAvatar(null);
       setForm((prev) => ({
         ...prev,
         email: updated.email || prev.email,
@@ -167,13 +196,24 @@ export default function Profile({ navigation }) {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Profile</Text>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={profile?.avatar_url ? { uri: profile.avatar_url } : DEFAULT_AVATAR}
-              style={styles.avatar}
-              resizeMode="cover"
-            />
-          </View>
+          <TouchableOpacity style={styles.avatarWrapper} onPress={handlePickAvatar} activeOpacity={0.8}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={
+                  selectedAvatar?.uri
+                    ? { uri: selectedAvatar.uri }
+                    : profile?.avatar_url
+                    ? { uri: profile.avatar_url }
+                    : DEFAULT_AVATAR
+                }
+                style={styles.avatar}
+                resizeMode="cover"
+              />
+            </View>
+            <View style={styles.avatarEditBadge}>
+              <Text style={styles.avatarEditIcon}>📷</Text>
+            </View>
+          </TouchableOpacity>
           <Text style={styles.name}>{profile?.name || 'Therapist'}</Text>
           <Text style={styles.subtitle}>Therapist Profile</Text>
 
@@ -285,10 +325,27 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     overflow: 'hidden',
-    marginBottom: 12,
     borderWidth: 2,
     borderColor: '#f2ebe1',
   },
+  avatarWrapper: {
+    marginBottom: 12,
+    position: 'relative',
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#f0a500',
+    borderRadius: 14,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  avatarEditIcon: { fontSize: 14 },
   avatar: {
     width: '100%',
     height: '100%',
