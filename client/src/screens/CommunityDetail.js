@@ -236,10 +236,6 @@ export default function CommunityDetail({ route, navigation }) {
 
                 <Text style={styles.postContent}>{post.content}</Text>
 
-                {post.image_url ? (
-                  <Image source={{ uri: post.image_url }} style={styles.postImage} />
-                ) : null}
-
                 <View style={styles.postFooter}>
                   <View style={styles.statContainer}>
                     <Text style={styles.statCount}>{post.comments_count ?? 0}</Text>
@@ -498,12 +494,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#4a4a4a',
     lineHeight: 18,
-    marginBottom: 10,
-  },
-  postImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 8,
     marginBottom: 10,
   },
   postFooter: {
