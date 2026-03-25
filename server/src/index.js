@@ -2434,7 +2434,6 @@ CREATE TABLE IF NOT EXISTS community_posts (
   user_id INTEGER,
   therapist_id INTEGER,
   content TEXT,
-  image_url TEXT,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS community_comments (
@@ -2459,7 +2458,6 @@ CREATE TABLE IF NOT EXISTS therapist_posts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   therapist_id INTEGER,
   content TEXT,
-  image_url TEXT,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS therapist_post_comments (
@@ -2481,17 +2479,6 @@ CREATE TABLE IF NOT EXISTS therapist_post_likes (
   UNIQUE(post_id, therapist_id)
 );
 `);
-
-// Migration: add image_url to community_posts if missing (older DBs)
-try {
-  const postCols = db.prepare("PRAGMA table_info(community_posts)").all();
-  if (!postCols.some(c => c.name === 'image_url')) {
-    db.exec("ALTER TABLE community_posts ADD COLUMN image_url TEXT;");
-    console.log('[DB] Added community_posts.image_url');
-  }
-} catch (e) {
-  // non-fatal
-}
 
 function buildCommunityQueryParts({ userId = null, therapistId = null } = {}) {
   const columns = [
@@ -2547,7 +2534,7 @@ function buildTherapistPostSelectParts({ userId = null, viewerTherapistId = null
   if (Number.isNaN(normalizedUserId)) normalizedUserId = null;
   if (Number.isNaN(normalizedViewerId)) normalizedViewerId = null;
   const columns = [
-    'p.*',
+    'p.id, p.therapist_id, p.content, p.created_at',
     'COALESCE(t.name, \'Therapist\') AS author_name',
     'COALESCE(t.avatar_url, \'\') AS author_avatar',
     '(SELECT COUNT(*) FROM therapist_post_comments c WHERE c.post_id = p.id) AS comments_count'
@@ -2756,7 +2743,7 @@ app.get('/api/communities/:id/posts', (req, res) => {
   }
   const extraColumns = likeClauses.join(',\n      ');
   const sql = `
-    SELECT p.*, 
+    SELECT p.id, p.community_id, p.user_id, p.therapist_id, p.content, p.created_at,
       COALESCE(u.name, t.name, 'Unknown') AS author_name,
       COALESCE(u.avatar_url, t.avatar_url, '') AS author_avatar,
       (SELECT COUNT(*) FROM community_comments c WHERE c.post_id = p.id) AS comments_count,
@@ -2775,8 +2762,8 @@ app.get('/api/communities/:id/posts', (req, res) => {
 // Create a post (user or therapist must be a member/facilitator)
 app.post('/api/communities/:id/posts', (req, res) => {
   const communityId = parseInt(req.params.id);
-  const { user_id, therapist_id, content, image_url } = req.body || {};
-  console.log(`[api] POST /api/communities/${communityId}/posts called with user_id=${user_id} therapist_id=${therapist_id} content_len=${(content||'').length} image_url=${image_url ? '[present]' : '[null]'}`);
+  const { user_id, therapist_id, content } = req.body || {};
+  console.log(`[api] POST /api/communities/${communityId}/posts called with user_id=${user_id} therapist_id=${therapist_id} content_len=${(content||'').length}`);
   if (!communityId || !content || (!user_id && !therapist_id)) {
     console.log('[api] invalid create post request, missing fields');
     return res.status(400).json({ error: 'community_id, content and user_id or therapist_id required' });
@@ -2797,10 +2784,10 @@ app.post('/api/communities/:id/posts', (req, res) => {
     if (!isFacilitator) return res.status(403).json({ error: 'Not a facilitator of this community' });
   }
   try {
-    const info = db.prepare('INSERT INTO community_posts (community_id, user_id, therapist_id, content, image_url) VALUES (?, ?, ?, ?, ?)')
-      .run(communityId, user_id || null, therapist_id || null, content, image_url || null);
+    const info = db.prepare('INSERT INTO community_posts (community_id, user_id, therapist_id, content) VALUES (?, ?, ?, ?)')
+      .run(communityId, user_id || null, therapist_id || null, content);
     const post = db.prepare(`
-      SELECT p.*, COALESCE(u.name, t.name, 'Unknown') AS author_name, COALESCE(u.avatar_url, t.avatar_url, '') AS author_avatar, 0 AS comments_count
+      SELECT p.id, p.community_id, p.user_id, p.therapist_id, p.content, p.created_at, COALESCE(u.name, t.name, 'Unknown') AS author_name, COALESCE(u.avatar_url, t.avatar_url, '') AS author_avatar, 0 AS comments_count
       FROM community_posts p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN therapists t ON p.therapist_id = t.id
@@ -2941,15 +2928,15 @@ app.get('/api/therapist-posts', (req, res) => {
 
 app.post('/api/therapist-posts', (req, res) => {
   const therapistId = parseOptionalInt(req.body?.therapist_id);
-  const { content, image_url } = req.body || {};
+  const { content } = req.body || {};
   if (!therapistId || !content) {
     return res.status(400).json({ error: 'therapist_id and content required' });
   }
   const therapist = db.prepare('SELECT id FROM therapists WHERE id=?').get(therapistId);
   if (!therapist) return res.status(404).json({ error: 'Therapist not found' });
   try {
-    const info = db.prepare('INSERT INTO therapist_posts (therapist_id, content, image_url) VALUES (?, ?, ?)')
-      .run(therapistId, content, image_url || null);
+    const info = db.prepare('INSERT INTO therapist_posts (therapist_id, content) VALUES (?, ?)')
+      .run(therapistId, content);
     const post = fetchTherapistPostWithMeta(info.lastInsertRowid);
     res.json(post);
   } catch (e) {

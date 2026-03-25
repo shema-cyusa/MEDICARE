@@ -17,7 +17,6 @@ import {
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 
 import AuthContext from '../context/AuthContext';
@@ -372,7 +371,6 @@ export default function TherapistDashboard({ route }) {
   const [feedError, setFeedError] = useState('');
   const [postContent, setPostContent] = useState('');
   const [posting, setPosting] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
   const [commentDrafts, setCommentDrafts] = useState({});
   const [commentLoading, setCommentLoading] = useState({});
   const [likeLoading, setLikeLoading] = useState({});
@@ -416,29 +414,6 @@ export default function TherapistDashboard({ route }) {
     loadTherapistFeed();
   }, [loadTherapistFeed]);
 
-  const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission required', 'Allow access to your photo library to attach an image.');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-      base64: true,
-    });
-    if (result.canceled || !result.assets?.length) return;
-    const asset = result.assets[0];
-    if (!asset.base64) {
-      Alert.alert('Upload error', 'Unable to attach this photo. Please choose another image.');
-      return;
-    }
-    const extension = asset.fileName?.split('.').pop()?.toLowerCase();
-    const mimeType =
-      asset.mimeType || (extension === 'png' ? 'image/png' : extension === 'gif' ? 'image/gif' : 'image/jpeg');
-    setSelectedImage({ uri: asset.uri, dataUri: `data:${mimeType};base64,${asset.base64}` });
-  };
-
   const handlePost = async () => {
     if (!therapistId || !postContent.trim() || posting) return;
     setPosting(true);
@@ -446,14 +421,12 @@ export default function TherapistDashboard({ route }) {
       const payload = {
         therapist_id: therapistId,
         content: postContent.trim(),
-        ...(selectedImage?.dataUri ? { image_url: selectedImage.dataUri } : {}),
       };
       console.log('[TherapistPost] Sending payload:', payload);
       const resp = await therapistPostApi.create(payload);
       console.log('[TherapistPost] Success:', resp.data);
       setTherapistFeed((prev) => [normalizeTherapistPost(resp.data), ...prev]);
       setPostContent('');
-      setSelectedImage(null);
       Alert.alert('Success', 'Post created successfully!');
     } catch (error) {
       console.error('[TherapistPost] Failed to create post', error.response?.data || error.message);
@@ -591,30 +564,6 @@ export default function TherapistDashboard({ route }) {
             onChangeText={setPostContent}
             editable={!posting}
           />
-          <View style={styles.composerActionsRow}>
-            <TouchableOpacity style={styles.attachButton} onPress={handlePickImage} disabled={posting}>
-              <Ionicons name="image" size={18} color="#0b61c6" />
-              <Text style={styles.attachText}>{selectedImage ? 'Change photo' : 'Add photo'}</Text>
-            </TouchableOpacity>
-            {selectedImage?.uri && (
-              <TouchableOpacity
-                style={styles.removeImageAction}
-                onPress={() => setSelectedImage(null)}
-                disabled={posting}
-              >
-                <Ionicons name="close" size={16} color="#101020" />
-                <Text style={styles.removeImageText}>Remove</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          {selectedImage?.uri && (
-            <View style={styles.composerImageWrapper}>
-              <Image source={{ uri: selectedImage.uri }} style={styles.composerImage} />
-              <TouchableOpacity style={styles.imageRemoveButton} onPress={() => setSelectedImage(null)}>
-                <Ionicons name="close-circle" size={22} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          )}
           <TouchableOpacity
             style={styles.postButton}
             onPress={handlePost}
@@ -648,9 +597,6 @@ export default function TherapistDashboard({ route }) {
                     </View>
                   </View>
                   <Text style={styles.postText}>{post.content || post.text}</Text>
-                  {post.image_url ? (
-                    <Image source={{ uri: post.image_url }} style={styles.postImage} />
-                  ) : null}
                   <View style={styles.postFooter}>
                     <View style={styles.actionsRow}>
                       <TouchableOpacity
@@ -786,37 +732,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafc',
     color: '#1b1c2b',
   },
-  composerActionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  attachButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  attachText: { fontSize: 13, fontWeight: '600', color: '#0b61c6', marginLeft: 6 },
-  removeImageAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  removeImageText: { fontSize: 13, color: '#101020', marginLeft: 4 },
-  composerImageWrapper: {
-    marginTop: 12,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  composerImage: { width: '100%', height: 180 },
-  imageRemoveButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: 16,
-    padding: 4,
-  },
   postButton: {
     marginTop: 12,
     backgroundColor: '#0b61c6',
@@ -850,7 +765,6 @@ const styles = StyleSheet.create({
   avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#DDD', marginRight: 8 },
   postAuthor: { fontWeight: '700', color: '#333' },
   postText: { color: '#222', marginBottom: 12 },
-  postImage: { width: '100%', height: 200, borderRadius: 12, marginBottom: 12 },
   postFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   actionsRow: { flexDirection: 'row' },
   actionPill: {

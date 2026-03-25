@@ -372,9 +372,6 @@ export default function Dashboard({ navigation }) {
                         <Text style={styles.cardDate}>{formatTimestamp(post.created_at || post.timestamp)}</Text>
                       </View>
                       <Text style={styles.cardMessage}>{post.content || post.message}</Text>
-                      {post.image_url ? (
-                        <Image source={{ uri: post.image_url }} style={styles.postImage} />
-                      ) : null}
                       <View style={styles.cardFooter}>
                         <View style={styles.commentContainer}>
                           <Text style={styles.commentCount}>{post.comments_count ?? 0}</Text>
@@ -709,12 +706,6 @@ const styles = StyleSheet.create({
   cardMessage: {
     fontSize: 14,
     color: '#2f2f33',
-    marginBottom: 10,
-  },
-  postImage: {
-    width: '100%',
-    height: 160,
-    borderRadius: 18,
     marginBottom: 10,
   },
   cardFooter: {
